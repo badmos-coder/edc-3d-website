@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useThree } from '@react-three/fiber'
 import { gsap } from 'gsap'
 import { Vector3 } from 'three'
-import create from 'zustand'
+import { create } from 'zustand'
 
 // Camera positions for different sections
 const cameraPositions = {

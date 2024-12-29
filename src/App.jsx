@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { LoadingScreen } from './components/ui/LoadingScreen';
+import LoadingScreen from './components/ui/LoadingScreen';
 import SoundControls from './components/ui/SoundControls';
 import Experience from './components/Experience';
 import { loadingManager, useLoading } from './systems/LoadingManager';
