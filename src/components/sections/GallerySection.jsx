@@ -1,11 +1,17 @@
+// src/components/sections/GallerySection.jsx
 import React, { useRef, useState } from 'react'
 import { Text } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
-import { motion } from 'framer-motion-3d'
+import { animated, useSpring } from '@react-spring/three'
 
 const GalleryImage = ({ position, title, imageUrl, onClick }) => {
   const meshRef = useRef()
   const [hovered, setHovered] = useState(false)
+
+  const springProps = useSpring({
+    scale: hovered ? 1.1 : 1,
+    config: { mass: 1, tension: 280, friction: 60 }
+  })
 
   useFrame((state) => {
     const time = state.clock.getElapsedTime()
@@ -13,9 +19,10 @@ const GalleryImage = ({ position, title, imageUrl, onClick }) => {
   })
 
   return (
-    <group
+    <animated.group
       ref={meshRef}
       position={position}
+      scale={springProps.scale}
       onClick={onClick}
       onPointerOver={() => setHovered(true)}
       onPointerOut={() => setHovered(false)}
@@ -40,13 +47,20 @@ const GalleryImage = ({ position, title, imageUrl, onClick }) => {
       >
         {title}
       </Text>
-    </group>
+    </animated.group>
   )
 }
 
 const GallerySection = ({ onClose }) => {
   const [selectedImage, setSelectedImage] = useState(null)
   const groupRef = useRef()
+
+  const springProps = useSpring({
+    scale: 1,
+    opacity: 1,
+    from: { scale: 0, opacity: 0 },
+    config: { mass: 1, tension: 280, friction: 60 }
+  })
 
   const images = [
     {
@@ -82,12 +96,10 @@ const GallerySection = ({ onClose }) => {
   ]
 
   return (
-    <motion.group
+    <animated.group
       ref={groupRef}
-      initial={{ scale: 0, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ scale: 0, opacity: 0 }}
-      transition={{ duration: 0.5 }}
+      scale={springProps.scale}
+      opacity={springProps.opacity}
     >
       <Text
         position={[0, 3, 0]}
@@ -108,11 +120,13 @@ const GallerySection = ({ onClose }) => {
       ))}
 
       {selectedImage && (
-        <motion.group
+        <animated.group
           position={[0, 0, 2]}
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          exit={{ scale: 0 }}
+          scale={useSpring({
+            from: { scale: 0 },
+            to: { scale: 1 },
+            config: { mass: 1, tension: 280, friction: 60 }
+          }).scale}
         >
           <mesh onClick={() => setSelectedImage(null)}>
             <planeGeometry args={[4, 3]} />
@@ -132,9 +146,9 @@ const GallerySection = ({ onClose }) => {
           >
             {selectedImage.title}
           </Text>
-        </motion.group>
+        </animated.group>
       )}
-    </motion.group>
+    </animated.group>
   )
 }
 

@@ -1,8 +1,7 @@
 import React, { useRef } from 'react'
 import { Text } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
-import { motion } from 'framer-motion-3d'
-
+import { animated, useSpring } from '@react-spring/three'
 const AboutCard = ({ position, title, content }) => {
   const meshRef = useRef()
 

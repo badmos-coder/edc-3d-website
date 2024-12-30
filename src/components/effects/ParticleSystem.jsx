@@ -1,91 +1,65 @@
-import React, { useState, useRef } from 'react'
+// src/components/effects/ParticleSystem.jsx
+import React, { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Environment, Stars } from '@react-three/drei'
-import MAITEDCLogo from './3d/MAITEDCLogo'
-import ParticleSystem from './effects/ParticleSystem'
-import PortalEffect from './effects/PortalEffect'
-import AboutSection from './sections/AboutSection'
-import EventsSection from './sections/EventsSection'
-import GallerySection from './sections/GallerySection'
-import TeamSection from './sections/TeamSection'
-import { useAudioManager } from '../systems/AudioManager'
+import * as THREE from 'three'
 
-const SECTIONS = {
-  HOME: 'home',
-  ABOUT: 'about',
-  EVENTS: 'events',
-  GALLERY: 'gallery',
-  TEAM: 'team'
-}
+const ParticleSystem = ({ count = 1000 }) => {
+  const points = useRef()
+  
+  const particlesPosition = useMemo(() => {
+    const positions = new Float32Array(count * 3)
+    
+    for (let i = 0; i < count; i++) {
+      const distance = Math.random() * 10 + 5
+      const theta = THREE.MathUtils.randFloatSpread(360)
+      const phi = THREE.MathUtils.randFloatSpread(360)
 
-const Experience = () => {
-  const [activeSection, setActiveSection] = useState(SECTIONS.HOME)
-  const mainGroupRef = useRef()
-  const { playSound } = useAudioManager()
+      let x = distance * Math.sin(theta) * Math.cos(phi)
+      let y = distance * Math.sin(theta) * Math.sin(phi)
+      let z = distance * Math.cos(theta)
+
+      positions[i * 3] = x
+      positions[i * 3 + 1] = y
+      positions[i * 3 + 2] = z
+    }
+    
+    return positions
+  }, [count])
 
   useFrame((state) => {
     const time = state.clock.getElapsedTime()
-    mainGroupRef.current.position.y = Math.sin(time * 0.5) * 0.2
+
+    for (let i = 0; i < count; i++) {
+      const i3 = i * 3
+      
+      points.current.geometry.attributes.position.array[i3] += Math.sin(time + i) * 0.001
+      points.current.geometry.attributes.position.array[i3 + 1] += Math.cos(time + i) * 0.001
+      points.current.geometry.attributes.position.array[i3 + 2] += Math.sin(time + i) * 0.001
+    }
+
+    points.current.geometry.attributes.position.needsUpdate = true
   })
 
-  const handleSectionChange = (section) => {
-    if (section !== activeSection) {
-      playSound('transition')
-      setActiveSection(section)
-    }
-  }
-
   return (
-    <>
-      {/* Environment Setup */}
-      <color attach="background" args={['#000000']} />
-      <fog attach="fog" args={['#000000', 10, 50]} />
-      <Environment preset="night" />
-      <Stars
-        radius={100}
-        depth={50}
-        count={5000}
-        factor={4}
-        saturation={0}
-        fade
-        speed={1}
+    <points ref={points}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          count={count}
+          array={particlesPosition}
+          itemSize={3}
+        />
+      </bufferGeometry>
+      <pointsMaterial
+        size={0.05}
+        color="#00B4D8"
+        sizeAttenuation
+        transparent
+        opacity={0.8}
+        blending={THREE.AdditiveBlending}
       />
-
-      {/* Main Content */}
-      <group ref={mainGroupRef}>
-        {/* Logo */}
-        <MAITEDCLogo position={[0, 2, 0]} />
-
-        {/* Particle Effects */}
-        <ParticleSystem />
-
-        {/* Portal Effects */}
-        <PortalEffect position={[0, 0, -5]} />
-
-        {/* Sections */}
-        {activeSection === SECTIONS.ABOUT && (
-          <AboutSection onClose={() => handleSectionChange(SECTIONS.HOME)} />
-        )}
-
-        {activeSection === SECTIONS.EVENTS && (
-          <EventsSection onClose={() => handleSectionChange(SECTIONS.HOME)} />
-        )}
-
-        {activeSection === SECTIONS.GALLERY && (
-          <GallerySection onClose={() => handleSectionChange(SECTIONS.HOME)} />
-        )}
-
-        {activeSection === SECTIONS.TEAM && (
-          <TeamSection onClose={() => handleSectionChange(SECTIONS.HOME)} />
-        )}
-      </group>
-
-      {/* Lights */}
-      <ambientLight intensity={0.5} />
-      <pointLight position={[10, 10, 10]} intensity={1} />
-      <pointLight position={[-10, -10, -10]} color="#00B4D8" intensity={0.5} />
-    </>
+    </points>
   )
 }
 
-export default Experience
+export default ParticleSystem

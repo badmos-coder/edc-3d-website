@@ -1,10 +1,9 @@
+// src/App.jsx
+import React, { useState, useEffect, Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { Suspense } from 'react'
 import styled from 'styled-components'
 import LoadingScreen from './components/ui/LoadingScreen'
-import SoundControls from './components/ui/SoundControls'
 import Experience from './components/Experience'
-import { useLoadingManager } from './systems/LoadingManager'
 
 const AppContainer = styled.div`
   width: 100vw;
@@ -16,29 +15,35 @@ const AppContainer = styled.div`
 `
 
 function App() {
-  const { isLoading, progress } = useLoadingManager()
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    // Simulate asset loading time
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 5000) // 5 seconds loading time - adjust as needed
+
+    return () => clearTimeout(timer)
+  }, [])
 
   return (
     <AppContainer>
       {isLoading ? (
-        <LoadingScreen progress={progress} />
+        <LoadingScreen />
       ) : (
-        <>
-          <Canvas
-            camera={{ position: [0, 0, 5], fov: 75 }}
-            dpr={[1, 2]}
-            gl={{
-              antialias: true,
-              alpha: false,
-              powerPreference: 'high-performance',
-            }}
-          >
-            <Suspense fallback={null}>
-              <Experience />
-            </Suspense>
-          </Canvas>
-          <SoundControls />
-        </>
+        <Canvas
+          camera={{ position: [0, 0, 5], fov: 75 }}
+          dpr={[1, 2]}
+          gl={{
+            antialias: true,
+            alpha: false,
+            powerPreference: 'high-performance',
+          }}
+        >
+          <Suspense fallback={null}>
+            <Experience />
+          </Suspense>
+        </Canvas>
       )}
     </AppContainer>
   )
